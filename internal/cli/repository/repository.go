@@ -9,4 +9,5 @@ type CLIRepository interface {
 	FindByKey(key string) (*CLIModel, error)
 	DeleteByKey(key string) error
 	SearchByKey(key string) ([]*CLIModel, error)
+	FindAll() ([]*CLIModel, error)
 }

@@ -32,3 +32,7 @@ func (h *CLIHandler) SearchByKey(ctx context.Context, key string) ([]*entity.Com
 func (h *CLIHandler) Exec(ctx context.Context, key string) (string, error) {
 	return h.service.Exec(ctx, key)
 }
+
+func (h *CLIHandler) GetAll(ctx context.Context) ([]*entity.Command, error) {
+	return h.service.GetAll(ctx)
+}

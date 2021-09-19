@@ -135,6 +135,29 @@ func (d *document) SearchByKey(key string) ([]*repository.CLIModel, error) {
 	return out, nil
 }
 
+func (d *document) FindAll() ([]*repository.CLIModel, error) {
+	if err := d.validatePath(); err != nil {
+		return nil, err
+	}
+
+	existingDataInMap, err := d.fetchAllExistingData()
+	if err != nil {
+		return nil, err
+	}
+
+	out := []*repository.CLIModel{}
+	for k, value := range existingDataInMap {
+		out = append(out, &repository.CLIModel{
+			Key:   k,
+			Value: value,
+		})
+	}
+	if len(out) < 1 {
+		return nil, errLib.ErrKeyNotFound
+	}
+	return out, nil
+}
+
 func (d *document) insert(payload map[string]string) error {
 	bytesData, err := json.Marshal(payload)
 	if err != nil {

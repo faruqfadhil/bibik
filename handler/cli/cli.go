@@ -11,4 +11,5 @@ type Service interface {
 	GetByKey(ctx context.Context, key string) (*entity.Command, error)
 	SearchByKey(ctx context.Context, key string) ([]*entity.Command, error)
 	Exec(ctx context.Context, key string) (string, error)
+	GetAll(ctx context.Context) ([]*entity.Command, error)
 }

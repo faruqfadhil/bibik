@@ -75,3 +75,18 @@ func (s *cliService) Exec(ctx context.Context, key string) (string, error) {
 	}
 	return string(out), nil
 }
+
+func (s *cliService) GetAll(ctx context.Context) ([]*entity.Command, error) {
+	out := []*entity.Command{}
+	datas, err := s.repo.FindAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range datas {
+		out = append(out, &entity.Command{
+			Key:   d.Key,
+			Value: d.Value,
+		})
+	}
+	return out, nil
+}
