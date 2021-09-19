@@ -1,18 +1,26 @@
-package repository_test
+package document_test
 
 import (
 	"errors"
+	"fmt"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/faruqfadhil/bibik/internal/cli/repository"
 	"github.com/faruqfadhil/bibik/internal/repository/cli-repository/document"
 
 	errLib "github.com/faruqfadhil/bibik/pkg/error"
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 )
 
 func initDocumentContainer() repository.CLIRepository {
-	db := document.NewDocument("../../repository/cli-repository/document/data/bibik.data")
+	dirname, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	path := ".bibik"
+	db := document.NewDocument(dirname, path, fmt.Sprintf("%s/%s/%s", dirname, path, "bibik.data"))
 	return db
 }
 
@@ -23,10 +31,24 @@ func TestUpsert(t *testing.T) {
 		req *repository.CLIModel
 		err error
 	}{
-		"success": {
+		"success insert data 1": {
 			req: &repository.CLIModel{
 				Key:   "key 1",
 				Value: "value 1",
+			},
+			err: nil,
+		},
+		"success insert data 2": {
+			req: &repository.CLIModel{
+				Key:   "key 2",
+				Value: "value 2",
+			},
+			err: nil,
+		},
+		"success insert data 3": {
+			req: &repository.CLIModel{
+				Key:   "number 1",
+				Value: "val 1",
 			},
 			err: nil,
 		},
@@ -70,9 +92,46 @@ func TestFindByKey(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			out, err := db.FindByKey(test.req)
-			if diff := cmp.Diff(out, test.out); diff != "" {
-				t.Fatalf("output diff: expect: %v, got: %v", test.out, out)
+			assert.Equal(t, test.out, out, "output different")
+			if !errors.Is(test.err, err) {
+				t.Fatalf("err diff: expect: %v, got: %v", test.err, err)
 			}
+		})
+	}
+}
+
+func TestSearchByKey(t *testing.T) {
+	db := initDocumentContainer()
+	tests := map[string]struct {
+		req string
+		out []*repository.CLIModel
+		err error
+	}{
+		"success": {
+			req: "key",
+			out: []*repository.CLIModel{
+				{
+					Key:   "key 2",
+					Value: "value 2",
+				},
+				{
+					Key:   "key 1",
+					Value: "value 1",
+				},
+			},
+			err: nil,
+		},
+		"key not found": {
+			req: "9999",
+			out: nil,
+			err: errLib.ErrKeyNotFound,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			out, err := db.SearchByKey(test.req)
+			assert.ElementsMatch(t, out, test.out, "output different")
 			if !errors.Is(test.err, err) {
 				t.Fatalf("err diff: expect: %v, got: %v", test.err, err)
 			}
@@ -87,7 +146,7 @@ func TestDeleteByKey(t *testing.T) {
 		err error
 	}{
 		"success": {
-			req: "key 1",
+			req: "number 1",
 			err: nil,
 		},
 		"key not found": {

@@ -18,49 +18,53 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 
-	"github.com/faruqfadhil/bibik/internal/entity"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )
 
-// saveCmd represents the save command
-var saveCmd = &cobra.Command{
-	Use:   "save",
-	Short: "Save data",
-	Long:  `Tell bibik to remember the data`,
+// getCmd represents the get command
+var getCmd = &cobra.Command{
+	Use:   "get",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cliHandler := initContainer()
-		payload := &entity.Command{
-			Key:   key,
-			Value: value,
-		}
-		err := cliHandler.UpsertCommand(context.Background(), payload)
+		resp, err := cliHandler.GetByKey(context.Background(), keyToBeGetted)
+		fmt.Printf("\n")
 		if err != nil {
 			fmt.Println(err.Error())
-			return err
+			return nil
 		}
-		fmt.Println(" done")
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+		t.AppendHeader(table.Row{"Key", "Value"})
+		t.AppendSeparator()
+		t.AppendRow([]interface{}{resp.Key, resp.Value})
+		t.Render()
 		return nil
 	},
 }
-
-var key string
-var value string
+var keyToBeGetted string
 
 func init() {
-	rootCmd.AddCommand(saveCmd)
-	saveCmd.Flags().StringVarP(&key, "key", "k", "", "set key data")
-	saveCmd.MarkFlagRequired("key")
-	saveCmd.Flags().StringVarP(&value, "value", "v", "", "set value")
-	saveCmd.MarkFlagRequired("value")
+	rootCmd.AddCommand(getCmd)
+	getCmd.Flags().StringVarP(&keyToBeGetted, "key", "k", "", "key to be getted")
+	getCmd.MarkFlagRequired("key")
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// saveCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// saveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

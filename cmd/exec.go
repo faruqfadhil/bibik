@@ -19,48 +19,45 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/faruqfadhil/bibik/internal/entity"
 	"github.com/spf13/cobra"
 )
 
-// saveCmd represents the save command
-var saveCmd = &cobra.Command{
-	Use:   "save",
-	Short: "Save data",
-	Long:  `Tell bibik to remember the data`,
+// execCmd represents the exec command
+var execCmd = &cobra.Command{
+	Use:   "exec",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cliHandler := initContainer()
-		payload := &entity.Command{
-			Key:   key,
-			Value: value,
-		}
-		err := cliHandler.UpsertCommand(context.Background(), payload)
+		out, err := cliHandler.Exec(context.Background(), keyToBeExec)
 		if err != nil {
 			fmt.Println(err.Error())
-			return err
+			return nil
 		}
-		fmt.Println(" done")
+		fmt.Println(out)
 		return nil
 	},
 }
 
-var key string
-var value string
+var keyToBeExec string
 
 func init() {
-	rootCmd.AddCommand(saveCmd)
-	saveCmd.Flags().StringVarP(&key, "key", "k", "", "set key data")
-	saveCmd.MarkFlagRequired("key")
-	saveCmd.Flags().StringVarP(&value, "value", "v", "", "set value")
-	saveCmd.MarkFlagRequired("value")
+	rootCmd.AddCommand(execCmd)
+	execCmd.Flags().StringVarP(&keyToBeExec, "key", "k", "", "key to be get command to execution")
+	execCmd.MarkFlagRequired("key")
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// saveCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// execCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// saveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// execCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

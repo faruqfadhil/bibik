@@ -18,13 +18,17 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+
+var spin *spinner.Spinner
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -33,6 +37,14 @@ var rootCmd = &cobra.Command{
 	Long: `Like a personal assistant, you can ask your bibik to save commands, read commands, execute commands, and etc.
 	bibik helps you to simplify the commands,
 	you don't need to remember all those long commands, tell your bibik to remember them.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		spin = spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+		spin.Start()
+		time.Sleep(10 * time.Millisecond)
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		spin.Stop()
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
