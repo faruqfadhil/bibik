@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	db "github.com/faruqfadhil/bibik/internal/database"
+	"github.com/faruqfadhil/bibik/internal/cli/repository"
 	errLib "github.com/faruqfadhil/bibik/pkg/error"
 )
 
@@ -13,13 +13,13 @@ type document struct {
 	path string
 }
 
-func NewDocument(path string) db.Database {
+func NewDocument(path string) repository.CLIRepository {
 	return &document{
 		path: path,
 	}
 }
 
-func (d *document) Upsert(req *db.Model) error {
+func (d *document) Upsert(req *repository.CLIModel) error {
 	payload := map[string]string{}
 	if _, err := os.Stat(d.path); os.IsNotExist(err) {
 		// create file if not exist.
@@ -46,14 +46,14 @@ func (d *document) Upsert(req *db.Model) error {
 	return d.insert(payload)
 }
 
-func (d *document) FindByKey(key string) (*db.Model, error) {
+func (d *document) FindByKey(key string) (*repository.CLIModel, error) {
 	existingDataInMap, err := d.fetchAllExistingData()
 	if err != nil {
 		return nil, err
 	}
 
 	if val, ok := existingDataInMap[key]; ok {
-		return &db.Model{
+		return &repository.CLIModel{
 			Key:   key,
 			Value: val,
 		}, nil
