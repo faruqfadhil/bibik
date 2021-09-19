@@ -5,6 +5,7 @@ type Model struct {
 	Value string
 }
 type Database interface {
-	Save(req *Model) error
+	Upsert(req *Model) error
 	FindByKey(key string) (*Model, error)
+	DeleteByKey(key string) error
 }
