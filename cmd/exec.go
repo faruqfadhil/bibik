@@ -34,7 +34,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cliHandler := initContainer()
-		out, err := cliHandler.Exec(context.Background(), keyToBeExec)
+		out, err := cliHandler.Exec(context.Background(), keyToBeExec, useDirr)
 		if err != nil {
 			fmt.Println(err.Error())
 			return nil
@@ -45,11 +45,13 @@ to quickly create a Cobra application.`,
 }
 
 var keyToBeExec string
+var useDirr bool
 
 func init() {
 	rootCmd.AddCommand(execCmd)
 	execCmd.Flags().StringVarP(&keyToBeExec, "key", "k", "", "key to be get command to execution")
 	execCmd.MarkFlagRequired("key")
+	execCmd.Flags().BoolVar(&useDirr, "use-dirr", false, "exec command in specified dir, specified dir is added when you run bibik save")
 
 	// Here you will define your flags and configuration settings.
 

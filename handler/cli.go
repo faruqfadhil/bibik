@@ -29,8 +29,8 @@ func (h *CLIHandler) SearchByKey(ctx context.Context, key string) ([]*entity.Com
 	return h.service.SearchByKey(ctx, key)
 }
 
-func (h *CLIHandler) Exec(ctx context.Context, key string) (string, error) {
-	return h.service.Exec(ctx, key)
+func (h *CLIHandler) Exec(ctx context.Context, key string, useDirr bool) (string, error) {
+	return h.service.Exec(ctx, key, useDirr)
 }
 
 func (h *CLIHandler) GetAll(ctx context.Context) ([]*entity.Command, error) {

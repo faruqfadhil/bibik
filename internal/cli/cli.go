@@ -1,8 +1,11 @@
 package cli
 
 import (
+	"bytes"
 	"context"
-	"fmt"
+	"errors"
+	"io"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -10,6 +13,7 @@ import (
 	"github.com/faruqfadhil/bibik/handler/cli"
 	"github.com/faruqfadhil/bibik/internal/cli/repository"
 	"github.com/faruqfadhil/bibik/internal/entity"
+	errLib "github.com/faruqfadhil/bibik/pkg/error"
 )
 
 type cliService struct {
@@ -29,6 +33,19 @@ func (s *cliService) UpsertCommand(ctx context.Context, req *entity.Command) err
 	if err != nil {
 		return err
 	}
+
+	if req.Options != nil && req.Options.Dir != "" {
+		// save dir as a new data.
+		err := s.repo.Upsert(&repository.CLIModel{
+			Key:   req.SetDirKey(),
+			Value: req.Options.Dir,
+		})
+		if err != nil {
+			go s.repo.DeleteByKey(req.Key)
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -58,22 +75,45 @@ func (s *cliService) SearchByKey(ctx context.Context, key string) ([]*entity.Com
 	}
 	return out, nil
 }
-func (s *cliService) Exec(ctx context.Context, key string) (string, error) {
+func (s *cliService) Exec(ctx context.Context, key string, useDirr bool) (string, error) {
 	command, err := s.repo.FindByKey(key)
 	if err != nil {
 		return "", err
 	}
 
+	var dirrCommandToBeExec string
+	if useDirr {
+		c := entity.Command{
+			Key: key,
+		}
+		dir, err := s.repo.FindByKey(c.SetDirKey())
+		if err != nil && !errors.Is(err, errLib.ErrKeyNotFound) {
+			return "", err
+		}
+		if dir == nil || (dir != nil && dir.Value == "") {
+			return "", errLib.ErrExecDirrNotFound
+		}
+		dirrCommandToBeExec = dir.Value
+	}
 	args := strings.Split(command.Value, " ")
+	cmd := exec.Command(args[0], args[1:]...)
+	if dirrCommandToBeExec != "" {
+		cmd.Dir = dirrCommandToBeExec
+	}
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
+	cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
 
-	s.spin.Suffix = fmt.Sprintf(" Executing: %s ...", args)
-	out, err := exec.Command(args[0], args[1:]...).Output()
-	fmt.Println(" done")
-
+	err = cmd.Run()
 	if err != nil {
 		return "", err
 	}
-	return string(out), nil
+	outStr, errStr := stdoutBuf.String(), stderrBuf.String()
+
+	if errStr != "" {
+		return "", errors.New(errStr)
+	}
+	return outStr, nil
 }
 
 func (s *cliService) GetAll(ctx context.Context) ([]*entity.Command, error) {

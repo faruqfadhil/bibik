@@ -33,6 +33,9 @@ var saveCmd = &cobra.Command{
 		payload := &entity.Command{
 			Key:   key,
 			Value: value,
+			Options: &entity.Options{
+				Dir: dir,
+			},
 		}
 		err := cliHandler.UpsertCommand(context.Background(), payload)
 		if err != nil {
@@ -46,6 +49,7 @@ var saveCmd = &cobra.Command{
 
 var key string
 var value string
+var dir string
 
 func init() {
 	rootCmd.AddCommand(saveCmd)
@@ -53,6 +57,7 @@ func init() {
 	saveCmd.MarkFlagRequired("key")
 	saveCmd.Flags().StringVarP(&value, "value", "v", "", "set value")
 	saveCmd.MarkFlagRequired("value")
+	saveCmd.Flags().StringVarP(&dir, "dir", "d", "", "set the directory where the saved command will be exec (using bibik exec --usedir command)")
 
 	// Here you will define your flags and configuration settings.
 
